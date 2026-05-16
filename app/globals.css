@@ -1,26 +1,281 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Design tokens → Tailwind utilities ────────────────────────────────────
+   @theme generates both CSS custom properties AND Tailwind utility classes.
+   Naming convention:
+     --color-*   → bg-*, text-*, border-*, ring-*, outline-* utilities
+     --text-*    → text-* font-size utilities
+     --radius-*  → rounded-* utilities
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Colors */
+  --color-bg:           #0d1117;
+  --color-canvas-inset: #010409; /* mirrors tokens.ts canvasInset; darker than bg for header elevation */
+  --color-surface:      #151b23;
+  --color-surface-2:    #1c2128;
+  --color-border:       #30363d;
+  --color-border-muted: #21262d;
+  --color-fg:           #f0f6fc;
+  --color-fg-dim:       #9198a1;
+  --color-fg-faint:     #6e7681;
+  --color-accent:       #a371f7;
+  --color-link:         #2f81f7; /* GitHub-style link blue; for repo names and link surfaces (distinct from accent = AI purple) */
+  --color-success:      #3fb950;
+  --color-warning:      #d29922;
+  --color-danger:       #f85149;
+  --color-heat-0:       #161b22;
+  --color-heat-1:       #0e4429;
+  --color-heat-2:       #006d32;
+  --color-heat-3:       #26a641;
+  --color-heat-4:       #39d353;
+
+  /* Font sizes (6-token scale; overrides Tailwind defaults) */
+  --text-xs:   11px;
+  --text-sm:   12px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   16px;
+  --text-xl:   20px;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-full: 999px;
 }
 
+/* Font families reference Next.js font CSS variables injected via layout.tsx.
+   @theme inline generates utilities without re-exporting new CSS variables. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:    var(--font-inter);
+  --font-mono:    var(--font-jetbrains);
+  --font-display: var(--font-fraunces);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─── Layout constants (no Tailwind utilities generated) ─────────────────── */
+:root {
+  --header-h: 56px;
+  --chat-top: var(--header-h);
+  --chat-h:   calc(100vh - var(--header-h));
+}
+
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  min-height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 10px; height: 10px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      {
+  background: var(--color-border-muted);
+  border-radius: 6px;
+  border: 2px solid var(--color-bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-border); }
+
+/* ─── Custom utilities ───────────────────────────────────────────────────── */
+
+/* ─── Page layout ────────────────────────────────────────────────────────── */
+
+/* Sticky 56px app header */
+@utility app-header {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-border-muted);
+  background-color: var(--color-canvas-inset);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Outer 2-column layout: profile section | chat panel */
+@utility page-grid {
+  display: grid;
+  grid-template-columns: 1fr 500px;
+  align-items: start;
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* Profile pane: left column of page-grid */
+@utility profile-pane {
+  padding: 24px 32px 48px;
+  border-right: 1px solid var(--color-border-muted);
+  min-width: 0;
+}
+
+/* Inner 2-column: sidebar (avatar/bio) | main col (repos + graph) */
+@utility profile-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Prevent grid columns from overflowing their track */
+@utility page-grid-col {
+  min-width: 0;
+}
+
+/* Sticky chat panel */
+@utility chat-pane {
+  position: sticky;
+  top: var(--chat-top);
+  height: var(--chat-h);
+  border-left: 1px solid var(--color-border-muted);
+}
+
+/* Contribution graph layout */
+@utility contrib-wrapper {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 6px;
+  align-items: start;
+}
+
+/* Fix 3: grid layout so each label sits above its exact week column */
+@utility contrib-months {
+  display: grid;
+  grid-template-columns: repeat(53, 11px);
+  column-gap: 3px;
+  height: 20px;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+@utility contrib-month-label {
+  overflow: visible;
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--color-fg-faint);
+  line-height: 1;
+  font-family: var(--font-sans);
+}
+
+@utility contrib-days-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 28px; /* = month-row height (20px) + margin-bottom (8px) */
+  font-size: 9px;
+  color: var(--color-fg-faint);
+  text-align: right;
+  line-height: 11px;
+}
+
+/* The actual heatmap grid — cells flow column-by-column */
+@utility contrib-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 11px);
+  grid-auto-flow: column;
+  grid-auto-columns: 11px;
+  gap: 3px;
+}
+
+/* Individual contribution cell */
+@utility contrib-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: outline 0.08s ease;
+
+  &:hover:not(.contrib-cell-hl) {
+    outline: 1px solid var(--color-fg);
+    outline-offset: 1px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Highlighted cell (set via chat citation clicks) */
+@utility contrib-cell-hl {
+  outline: 1.5px solid var(--color-accent);
+  outline-offset: 2px;
+  z-index: 1;
+
+  &:hover {
+    outline: 1.5px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Fix 1: level-0 cells — border-color transparent so they recede into bg */
+@utility contrib-cell-empty {
+  border-color: transparent;
+}
+
+/* ─── Contribution cell mount animation ──────────────────────────────────── */
+@keyframes cell-reveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cell-animate {
+  animation: cell-reveal 180ms ease-out both;
+  /* --col is set as an inline style (dynamic column index) */
+  animation-delay: calc(var(--col, 0) * 6ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-animate {
+    animation: none;
+  }
+}
+
+/* Composer textarea max-height — avoids arbitrary value in component */
+@utility composer-textarea {
+  max-height: 152px; /* 6 lines × 22px + 2 × 10px padding */
+  overflow-y: auto;
+  resize: none;
+  width: 100%;
+}
+
+/* Legend swatches (non-interactive, decoration only) */
+@utility contrib-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+/* ─── Responsive fallback: single-column below 1180px ───────────────────── */
+@media (max-width: 1179px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-pane {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border-muted);
+    padding: 16px 16px 32px;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .chat-pane {
+    position: static;
+    height: auto;
+    min-height: 60vh;
+    border-left: 0;
+    border-top: 1px solid var(--color-border-muted);
+  }
 }

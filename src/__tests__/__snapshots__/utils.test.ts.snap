@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`seededRandom > matches known output for seed 42 (regression guard) 1`] = `0.5857526285108179`;
+
+exports[`seededRandom > matches known output for seed 42 (regression guard) 2`] = `0.5927942018024623`;
+
+exports[`seededRandom > matches known output for seed 42 (regression guard) 3`] = `0.461197072872892`;

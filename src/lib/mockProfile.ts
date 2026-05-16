@@ -1,0 +1,61 @@
+import type { Profile } from '@/src/types/profile'
+
+export const MOCK_PROFILE: Profile = {
+  id: 'elenavoss',
+  name: 'Elena Voss',
+  username: 'elenavoss',
+  avatarUrl: '',
+  bio: 'Frontend systems & design tools. Working on tk-rs and contributing to Zed.',
+  location: 'Berlin, Germany',
+  timezone: 'Europe/Berlin',
+  joinedAt: '2019-03-14',
+  stats: {
+    repos: 47,
+    followers: 2300,
+    following: 312,
+    streak: 39,
+  },
+  pinnedRepos: [
+    {
+      id: 'tk-rs',
+      name: 'tk-rs',
+      description:
+        'A terminal-first key/value notebook. Versioned, local-first, sync optional.',
+      language: { name: 'Rust', color: '#dea584' },
+      stars: 3400,
+      forks: 412,
+      isFork: false,
+      url: 'https://github.com/elenavoss/tk-rs',
+    },
+    {
+      id: 'cells',
+      name: 'cells',
+      description: 'Spreadsheet primitives for design-tool authors. ~3 KB gzip.',
+      language: { name: 'TypeScript', color: '#3178c6' },
+      stars: 812,
+      forks: 0,
+      isFork: false,
+      url: 'https://github.com/elenavoss/cells',
+    },
+    {
+      id: 'paper-cuts',
+      name: 'paper-cuts',
+      description: 'Notes from shipping six design systems. Mostly grievances.',
+      language: { name: 'MDX', color: '#bf4080' },
+      stars: 204,
+      forks: 0,
+      isFork: false,
+      url: 'https://github.com/elenavoss/paper-cuts',
+    },
+    {
+      id: 'zed',
+      name: 'zed',
+      description: 'Code at the speed of thought — high-performance editor.',
+      language: { name: 'Rust', color: '#dea584' },
+      stars: 48000,
+      forks: 0,
+      isFork: true,
+      url: 'https://github.com/zed-industries/zed',
+    },
+  ],
+}
