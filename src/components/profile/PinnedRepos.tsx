@@ -2,7 +2,7 @@
 
 import type { Repo } from '@/src/types/profile'
 import { RepoCard } from './RepoCard'
-import { useChat } from '@/src/components/chat/ChatProvider'
+import { useChat } from '../chat/ChatProvider'
 
 export interface PinnedReposProps {
   repos: Repo[]
@@ -23,11 +23,15 @@ export function PinnedRepos({ repos }: PinnedReposProps) {
           · click a card to scope the conversation
         </span>
       </h2>
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        {repos.map(repo => (
-          <RepoCard key={repo.id} repo={repo} onClick={handleCardClick} />
-        ))}
-      </div>
+      {repos.length === 0 ? (
+        <p className="text-sm text-fg-dim mt-4">No pinned repositories yet.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          {repos.map((repo) => (
+            <RepoCard key={repo.id} repo={repo} onClick={handleCardClick} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

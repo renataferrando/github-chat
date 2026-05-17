@@ -1,66 +1,61 @@
-"use client";
+'use client'
 
-import type { AssistantMessage as AssistantMessageData } from "@/src/types/chat";
-import { ReasoningTrace } from "./ReasoningTrace";
-import { useChat } from "./ChatProvider";
+import type { ReactNode } from 'react'
+import type { AssistantMessage as AssistantMessageData } from '@/src/types/chat'
+import { ReasoningTrace } from './ReasoningTrace'
+import { FiguresCard } from './FiguresCard'
+import { useChat } from './ChatProvider'
+import { BotIcon } from '@/src/components/icons'
 
 export interface AssistantMessageProps {
-  message: AssistantMessageData;
+  message: AssistantMessageData
 }
 
 // ─── Minimal markdown renderer ────────────────────────────────────────────────
 // Handles **bold** and `code` only — sufficient for the canned answer.
-function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+function renderInline(text: string): ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
   return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
+    if (part.startsWith('**') && part.endsWith('**')) {
       return (
         <strong key={i} className="font-semibold text-fg">
           {part.slice(2, -2)}
         </strong>
-      );
+      )
     }
-    if (part.startsWith("`") && part.endsWith("`")) {
+    if (part.startsWith('`') && part.endsWith('`')) {
       return (
-        <code
-          key={i}
-          className="font-mono text-sm bg-surface-2 px-1 rounded-sm text-fg"
-        >
+        <code key={i} className="font-mono text-sm bg-surface-2 px-1 rounded-sm text-fg">
           {part.slice(1, -1)}
         </code>
-      );
+      )
     }
-    return part;
-  });
+    return part
+  })
 }
 
-function renderAnswer(answer: string): React.ReactNode {
-  return answer.split("\n\n").map((para, i) => (
-    <p key={i} className={i > 0 ? "mt-3" : ""}>
+function renderAnswer(answer: string): ReactNode {
+  return answer.split('\n\n').map((para, i) => (
+    <p key={i} className={i > 0 ? 'mt-3' : ''}>
       {renderInline(para)}
     </p>
-  ));
+  ))
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export function AssistantMessage({ message }: AssistantMessageProps) {
-  const { stopStreaming, setHighlightedCells } = useChat();
+  const { sendMessage, stopStreaming, setHighlightedCells } = useChat()
 
-  const isActive =
-    message.status === "thinking" || message.status === "streaming";
+  const isActive = message.status === 'thinking' || message.status === 'streaming'
   const showAnswer =
-    message.answer !== "" &&
-    (message.status === "done" || message.status === "stopped");
-  const showFollowups =
-    message.status === "done" && message.followups.length > 0;
+    message.answer !== '' && (message.status === 'done' || message.status === 'stopped')
+  const showFollowups = message.status === 'done' && message.followups.length > 0
 
   return (
-    <article role="article" className="flex gap-3 items-start">
+    <article className="flex gap-3 items-start">
       {/* Bot avatar glyph */}
-      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-surface-2 border border-border flex-shrink-0 text-accent">
-        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-          <path d="M7.998 14.5c2.832 0 5.002-2.124 5.002-5.5C13 6.07 10.916 4.5 8 4.5 5.083 4.5 3 6.07 3 9c0 3.376 2.166 5.5 4.998 5.5ZM5.965 11.6a.5.5 0 1 1 .714-.7l.045.05A1 1 0 0 0 7.5 11.2c.345 0 .61-.135.776-.25l.045-.05a.5.5 0 0 1 .714.7l-.06.067A2 2 0 0 1 7.5 12.2a2 2 0 0 1-1.475-.533Z" />
-        </svg>
+      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-surface-2 border border-border shrink-0 text-accent">
+        <BotIcon size={14} />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -80,11 +75,14 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
           onStepClick={setHighlightedCells}
         />
 
+        {/* Figures card — shown when stream completes */}
+        {message.status === 'done' && message.figures && message.figures.length > 0 && (
+          <FiguresCard figures={message.figures} />
+        )}
+
         {/* Answer — revealed once done or stopped */}
         {showAnswer && (
-          <div className="text-base text-fg leading-relaxed">
-            {renderAnswer(message.answer)}
-          </div>
+          <div className="text-base text-fg leading-relaxed">{renderAnswer(message.answer)}</div>
         )}
 
         {/* Followup chips — only when fully done */}
@@ -94,7 +92,8 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
               <button
                 key={q}
                 type="button"
-                className="text-xs border border-border-muted rounded-full px-3 py-1.5 text-fg-dim hover:border-border hover:text-fg transition-colors"
+                className="text-xs border border-border-muted rounded-full px-3 py-1.5 text-fg-dim hover:border-border hover:text-fg transition-colors cursor-pointer"
+                onClick={() => sendMessage(q)}
               >
                 {q}
               </button>
@@ -103,5 +102,5 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
         )}
       </div>
     </article>
-  );
+  )
 }

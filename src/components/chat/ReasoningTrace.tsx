@@ -3,10 +3,11 @@
 import { useState, useId } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { ReasoningStep, StreamStatus } from '@/src/types/chat'
-import { ReasoningStepRow } from './ReasoningStep'
+import { ReasoningStepRow } from './ReasoningStepRow'
+import { CheckIcon, ChevronDownIcon, StopIcon } from '@/src/components/icons'
 
 export interface ReasoningTraceProps {
-  steps:  ReasoningStep[]
+  steps: ReasoningStep[]
   status: StreamStatus
   /**
    * Called when the Stop button is clicked. If omitted while
@@ -23,32 +24,27 @@ export interface ReasoningTraceProps {
 // Container variant propagates staggerChildren to ReasoningStepRow children.
 const containerVariants = {
   hidden: {},
-  show:   { transition: { staggerChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.05 } },
 }
 const containerVariantsReduced = {
   hidden: {},
-  show:   {},
+  show: {},
 }
 
-export function ReasoningTrace({
-  steps,
-  status,
-  onStop,
-  onStepClick,
-}: ReasoningTraceProps) {
+export function ReasoningTrace({ steps, status, onStop, onStepClick }: ReasoningTraceProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const prefersReduced            = useReducedMotion() ?? false
-  const traceId                   = useId()
+  const prefersReduced = useReducedMotion() ?? false
+  const traceId = useId()
 
   const isStreaming = status === 'thinking' || status === 'streaming'
-  const totalMs     = steps.reduce((sum, s) => sum + s.durationMs, 0)
-  const totalSec    = (totalMs / 1000).toFixed(1)
+  const totalMs = steps.reduce((sum, s) => sum + s.durationMs, 0)
+  const totalSec = (totalMs / 1000).toFixed(1)
 
-  const toggle = () => setCollapsed(c => !c)
+  const toggle = () => setCollapsed((c) => !c)
 
   return (
     <div
-      className="border border-border-muted rounded-md overflow-hidden mb-3"
+      className="border border-accent/25 rounded-md overflow-hidden mb-3"
       role="region"
       aria-label="Reasoning trace"
     >
@@ -63,7 +59,7 @@ export function ReasoningTrace({
         aria-controls={traceId}
         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono bg-surface text-fg-dim hover:bg-surface-2 text-left transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         onClick={toggle}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             toggle()
@@ -73,14 +69,12 @@ export function ReasoningTrace({
         {/* Status indicator */}
         {isStreaming ? (
           <span
-            className="w-4 h-4 rounded-full border-2 border-accent border-t-transparent flex-shrink-0 animate-spin"
+            className="w-4 h-4 rounded-full border-2 border-accent border-t-transparent shrink-0 animate-spin"
             aria-label="Streaming…"
           />
         ) : (
-          <span className="w-4 h-4 rounded-full bg-success flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor" className="text-bg" aria-hidden="true">
-              <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
-            </svg>
+          <span className="w-4 h-4 rounded-full bg-success flex items-center justify-center shrink-0">
+            <CheckIcon size={10} className="text-bg" />
           </span>
         )}
 
@@ -100,26 +94,21 @@ export function ReasoningTrace({
           <button
             type="button"
             className="flex items-center gap-1 px-2 py-0.5 border border-border rounded-sm text-fg-dim hover:text-danger hover:border-danger transition-colors"
-            onClick={e => { e.stopPropagation(); onStop(); }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onStop()
+            }}
           >
-            <svg viewBox="0 0 12 12" width="8" height="8" fill="currentColor" aria-hidden="true">
-              <rect x="2" y="2" width="8" height="8" rx="1" />
-            </svg>
+            <StopIcon size={8} />
             Stop
           </button>
         )}
 
         {/* Collapse chevron */}
-        <svg
-          viewBox="0 0 16 16"
-          width="12"
-          height="12"
-          fill="currentColor"
-          aria-hidden="true"
-          className={`flex-shrink-0 transition-transform ${collapsed ? '-rotate-90' : ''}`}
-        >
-          <path d="M12.78 6.22a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L3.22 7.28a.75.75 0 0 1 1.06-1.06L8 9.94l3.72-3.72a.75.75 0 0 1 1.06 0Z" />
-        </svg>
+        <ChevronDownIcon
+          size={12}
+          className={`shrink-0 transition-transform ${collapsed ? '-rotate-90' : ''}`}
+        />
       </div>
 
       {/* ── Steps (staggered Framer Motion entry) ── */}
@@ -146,7 +135,7 @@ export function ReasoningTrace({
       {/* Empty skeleton while model is thinking (no steps yet) */}
       {!collapsed && steps.length === 0 && isStreaming && (
         <div className="px-3 py-3 text-xs font-mono text-fg-faint flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full border border-accent border-t-transparent animate-spin flex-shrink-0" />
+          <span className="w-3 h-3 rounded-full border border-accent border-t-transparent animate-spin shrink-0" />
           Thinking…
         </div>
       )}

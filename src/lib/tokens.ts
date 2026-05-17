@@ -1,3 +1,8 @@
+// Design system split:
+//   CSS tokens (colors, font sizes, radii) → app/globals.css @theme
+//   JS-only runtime constants (avatar palette, per-user overrides) → this file
+// See DESIGN.md for the full design system reference.
+
 // Avatar background palette — used by avatarColor() in utils.ts.
 // All 8 colors verified ≥4.5:1 contrast ratio with white (#ffffff).
 export const AVATAR_PALETTE = [
@@ -13,5 +18,5 @@ export const AVATAR_PALETTE = [
 
 // Per-username color overrides — checked before the djb2 hash fallback.
 export const AVATAR_OVERRIDES: Readonly<Record<string, string>> = {
-  elenavoss: '#1a7f3c',
+  elenavoss: '#1b6ca8',
 }

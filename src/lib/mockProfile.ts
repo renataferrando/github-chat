@@ -19,8 +19,7 @@ export const MOCK_PROFILE: Profile = {
     {
       id: 'tk-rs',
       name: 'tk-rs',
-      description:
-        'A terminal-first key/value notebook. Versioned, local-first, sync optional.',
+      description: 'A terminal-first key/value notebook. Versioned, local-first, sync optional.',
       language: { name: 'Rust', color: '#dea584' },
       stars: 3400,
       forks: 412,

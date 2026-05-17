@@ -1,10 +1,4 @@
-import type {
-  ChatState,
-  ChatAction,
-  Message,
-  AssistantMessage,
-  ChatScope,
-} from '@/src/types/chat'
+import type { ChatState, ChatAction, Message, AssistantMessage, ChatScope } from '@/src/types/chat'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -14,16 +8,14 @@ function updateAssistant(
   id: string,
   updater: (msg: AssistantMessage) => AssistantMessage,
 ): Message[] {
-  return messages.map(m =>
-    m.id === id && m.role === 'assistant' ? updater(m) : m,
-  )
+  return messages.map((m) => (m.id === id && m.role === 'assistant' ? updater(m) : m))
 }
 
 /** True when two scopes refer to the same logical entity. */
 function scopesMatch(a: ChatScope, b: ChatScope): boolean {
   if (a.kind !== b.kind) return false
-  if (a.kind === 'day'    && b.kind === 'day')    return a.date === b.date
-  if (a.kind === 'repo'   && b.kind === 'repo')   return a.repoId === b.repoId
+  if (a.kind === 'day' && b.kind === 'day') return a.date === b.date
+  if (a.kind === 'repo' && b.kind === 'repo') return a.repoId === b.repoId
   if (a.kind === 'window' && b.kind === 'window') return a.from === b.from && a.to === b.to
   return false
 }
@@ -40,35 +32,37 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       const userMsg = action.payload
       // Create a blank thinking assistant message; the provider will stream into it.
       const assistantMsg: AssistantMessage = {
-        id:        crypto.randomUUID(),
-        role:      'assistant',
-        status:    'thinking',
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        status: 'thinking',
         reasoning: [],
-        answer:    '',
+        answer: '',
         followups: [],
         timestamp: Date.now(),
       }
       return {
         ...state,
         messages: [...state.messages, userMsg, assistantMsg],
-        status:   'streaming',
-        scopes:   [], // chips attached to the user message; clear the bar
+        status: 'streaming',
+        scopes: [], // chips attached to the user message; clear the bar
       }
     }
 
     case 'BEGIN_RESPONSE':
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.id, m => ({
-          ...m, status: 'streaming',
+        messages: updateAssistant(state.messages, action.payload.id, (m) => ({
+          ...m,
+          status: 'streaming',
         })),
       }
 
     case 'REASONING_STEP':
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.msgId, m => ({
-          ...m, reasoning: [...m.reasoning, action.payload.step],
+        messages: updateAssistant(state.messages, action.payload.msgId, (m) => ({
+          ...m,
+          reasoning: [...m.reasoning, action.payload.step],
         })),
       }
 
@@ -77,19 +71,21 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       // but included so the reducer is total over ChatAction.
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.msgId, m => ({
-          ...m, answer: m.answer + action.payload.chunk,
+        messages: updateAssistant(state.messages, action.payload.msgId, (m) => ({
+          ...m,
+          answer: m.answer + action.payload.chunk,
         })),
       }
 
     case 'FINISH':
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.msgId, m => ({
+        messages: updateAssistant(state.messages, action.payload.msgId, (m) => ({
           ...m,
-          status:    'done',
-          answer:    action.payload.answer,
+          status: 'done',
+          answer: action.payload.answer,
           followups: action.payload.followups,
+          figures: action.payload.figures,
         })),
         status: 'idle',
       }
@@ -97,8 +93,9 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case 'STOP':
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.msgId, m => ({
-          ...m, status: 'stopped',
+        messages: updateAssistant(state.messages, action.payload.msgId, (m) => ({
+          ...m,
+          status: 'stopped',
         })),
         status: 'idle',
       }
@@ -106,7 +103,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case 'ERROR':
       return {
         ...state,
-        messages: updateAssistant(state.messages, action.payload.msgId, m => ({
+        messages: updateAssistant(state.messages, action.payload.msgId, (m) => ({
           ...m,
           status: 'error',
           answer: `[error] ${action.payload.error}`,
@@ -116,7 +113,7 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
 
     case 'ADD_SCOPE': {
       const scope = action.payload
-      if (state.scopes.some(s => scopesMatch(s, scope))) return state
+      if (state.scopes.some((s) => scopesMatch(s, scope))) return state
       return { ...state, scopes: [...state.scopes, scope] }
     }
 
@@ -124,9 +121,12 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       const target = action.payload
       return {
         ...state,
-        scopes: state.scopes.filter(s => !scopesMatch(s, target)),
+        scopes: state.scopes.filter((s) => !scopesMatch(s, target)),
       }
     }
+
+    case 'CLEAR_SCOPES':
+      return { ...state, scopes: [] }
 
     case 'SET_HIGHLIGHTED':
       return { ...state, highlightedCells: action.payload }

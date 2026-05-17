@@ -1,9 +1,8 @@
-import type { Message, AssistantMessage, ReasoningStep } from '@/src/types/chat'
+import type { Message, AssistantMessage, ReasoningStep, Figure } from '@/src/types/chat'
 
-// ─── Canned reasoning data ────────────────────────────────────────────────────
-// Defined before STATIC_MESSAGES so CANNED_ASSISTANT can reference it directly.
+// ─── Mock reasoning data ──────────────────────────────────────────────────────
 
-const CANNED_REASONING: ReasoningStep[] = [
+const MOCK_REASONING: ReasoningStep[] = [
   {
     id: 'r1',
     tag: 'INFO',
@@ -24,8 +23,13 @@ const CANNED_REASONING: ReasoningStep[] = [
     text: 'Week Mar 9–15 avg: 14.4 / day vs trailing-90 baseline 5.1',
     durationMs: 580,
     sourceDates: [
-      '2026-03-08', '2026-03-09', '2026-03-10',
-      '2026-03-11', '2026-03-12', '2026-03-13', '2026-03-14',
+      '2026-03-08',
+      '2026-03-09',
+      '2026-03-10',
+      '2026-03-11',
+      '2026-03-12',
+      '2026-03-13',
+      '2026-03-14',
     ],
   },
   {
@@ -44,31 +48,38 @@ const CANNED_REASONING: ReasoningStep[] = [
   },
 ]
 
-const CANNED_ANSWER =
-  'The busiest day was **Tuesday, March 10** — 23 contributions, almost all on the `release/0.4` branch of **tk-rs**.\n\nIt wasn\'t a one-off. The surrounding week averaged 14.4 contributions a day — about 2.8× the 90-day baseline — and activity fell sharply the following Monday. That\'s the shape of a release sprint.'
+const MOCK_ANSWER =
+  "The busiest day was **Tuesday, March 10** — 23 contributions, almost all on the `release/0.4` branch of **tk-rs**.\n\nIt wasn't a one-off. The surrounding week averaged 14.4 contributions a day — about 2.8× the 90-day baseline — and activity fell sharply the following Monday. That's the shape of a release sprint."
 
-const CANNED_FOLLOWUPS = [
+const MOCK_FOLLOWUPS = [
   'Does she ship on weekends?',
   'When did she take a break?',
   'What language did she pick up this year?',
 ]
 
-/** Frozen canned data used by the streaming driver inside AssistantMessage. */
-export const CANNED_ASSISTANT: {
+const MOCK_FIGURES: Figure[] = [
+  { label: 'Peak day', value: '23', sub: 'Tue · Mar 10', tone: 'success' },
+  { label: 'Week avg', value: '14.4', sub: 'Mar 9–15' },
+  { label: 'vs baseline', value: '2.8×', sub: 'trailing 90d', tone: 'success' },
+]
+
+export const MOCK_ASSISTANT: {
   reasoning: AssistantMessage['reasoning']
-  answer:    AssistantMessage['answer']
+  answer: AssistantMessage['answer']
   followups: AssistantMessage['followups']
+  figures: Figure[]
 } = {
-  reasoning: CANNED_REASONING,
-  answer:    CANNED_ANSWER,
-  followups: CANNED_FOLLOWUPS,
+  reasoning: MOCK_REASONING,
+  answer: MOCK_ANSWER,
+  followups: MOCK_FOLLOWUPS,
+  figures: MOCK_FIGURES,
 }
 
-// ─── Static messages ──────────────────────────────────────────────────────────
-// STATIC_MESSAGES[1] starts in 'thinking' with empty data so AssistantMessage
-// can demonstrate the full streaming flow on load (Stage 3 driver).
+// ─── Mock messages ────────────────────────────────────────────────────────────
+// MOCK_MESSAGES[1] starts in 'thinking' with empty data so AssistantMessage
+// can demonstrate the full streaming flow on load.
 
-export const STATIC_MESSAGES: Message[] = [
+export const MOCK_MESSAGES: Message[] = [
   {
     id: 'u1',
     role: 'user',
@@ -81,7 +92,7 @@ export const STATIC_MESSAGES: Message[] = [
     role: 'assistant',
     status: 'thinking',
     reasoning: [],
-    answer:    '',
+    answer: '',
     followups: [],
     timestamp: Date.UTC(2026, 4, 15, 14, 2, 3),
   },
@@ -101,10 +112,14 @@ export async function* streamReasoning(
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(resolve, step.durationMs)
       if (signal) {
-        signal.addEventListener('abort', () => {
-          clearTimeout(timer)
-          reject(new DOMException('aborted', 'AbortError'))
-        }, { once: true })
+        signal.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(timer)
+            reject(new DOMException('aborted', 'AbortError'))
+          },
+          { once: true },
+        )
       }
     })
     yield step

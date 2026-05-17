@@ -26,16 +26,42 @@ export function avatarColor(username: string): string {
 
 // ─── Date formatting ──────────────────────────────────────────────────────────
 
-const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] as const
-const MONTH_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'] as const
-const DAY_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as const
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const
+const MONTH_LONG = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 export function formatDate(iso: string, format: 'short' | 'long'): string {
-  const d   = new Date(iso + 'T00:00:00Z')
+  const d = new Date(iso + 'T00:00:00Z')
   const dow = d.getUTCDay()
   const mon = d.getUTCMonth()
   const day = d.getUTCDate()
-  const yr  = d.getUTCFullYear()
+  const yr = d.getUTCFullYear()
 
   if (format === 'short') {
     return `${DAY_SHORT[dow]} · ${MONTH_SHORT[mon]} ${day}`
@@ -46,10 +72,10 @@ export function formatDate(iso: string, format: 'short' | 'long'): string {
 // ─── Heat level ───────────────────────────────────────────────────────────────
 
 export function getContributionLevel(count: number): HeatLevel {
-  if (count === 0)  return 0
-  if (count <= 3)   return 1
-  if (count <= 7)   return 2
-  if (count <= 14)  return 3
+  if (count === 0) return 0
+  if (count <= 3) return 1
+  if (count <= 7) return 2
+  if (count <= 14) return 3
   return 4
 }
 
@@ -102,7 +128,7 @@ export function trailingAverage(
   beforeDate: string,
   windowDays: number,
 ): number {
-  const idx = days.findIndex(d => d.date === beforeDate)
+  const idx = days.findIndex((d) => d.date === beforeDate)
   if (idx < 0) return 0
   const start = Math.max(0, idx - windowDays)
   const slice = days.slice(start, idx)

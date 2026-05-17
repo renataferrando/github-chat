@@ -7,6 +7,9 @@
      --text-*    → text-* font-size utilities
      --radius-*  → rounded-* utilities
    ─────────────────────────────────────────────────────────────────────────── */
+/* Design system tokens — see DESIGN.md for the full reference.
+   JS-only runtime constants (avatar palette, per-user overrides) live in src/lib/tokens.ts.
+   Rule: referenced in className → here; referenced in JS → tokens.ts. */
 @theme {
   /* Colors */
   --color-bg:           #0d1117;
@@ -47,9 +50,8 @@
 /* Font families reference Next.js font CSS variables injected via layout.tsx.
    @theme inline generates utilities without re-exporting new CSS variables. */
 @theme inline {
-  --font-sans:    var(--font-inter);
-  --font-mono:    var(--font-jetbrains);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
 }
 
 /* ─── Layout constants (no Tailwind utilities generated) ─────────────────── */
@@ -135,7 +137,7 @@ body {
   position: sticky;
   top: var(--chat-top);
   height: var(--chat-h);
-  border-left: 1px solid var(--color-border-muted);
+  border-left: 1px solid color-mix(in oklab, var(--color-accent) 25%, var(--color-border-muted));
 }
 
 /* Contribution graph layout */

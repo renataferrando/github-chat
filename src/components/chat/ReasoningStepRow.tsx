@@ -13,29 +13,24 @@ const TAG_COLOR: Record<ReasoningTag, string> = {
 
 const stepVariants = {
   hidden: { opacity: 0, y: 4 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' as const } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' as const } },
 }
 
 const stepVariantsReduced = {
   hidden: {},
-  show:   {},
+  show: {},
 }
 
 export interface ReasoningStepRowProps {
-  step:         ReasoningStep
+  step: ReasoningStep
   /** True only for the last step while status === 'streaming'. */
-  isLive:       boolean
+  isLive: boolean
   reduceMotion: boolean
-  onClick?:     (sourceDates: string[]) => void
+  onClick?: (sourceDates: string[]) => void
 }
 
-export function ReasoningStepRow({
-  step,
-  isLive,
-  reduceMotion,
-  onClick,
-}: ReasoningStepRowProps) {
-  const hasSource   = step.sourceDates.length > 0
+export function ReasoningStepRow({ step, isLive, reduceMotion, onClick }: ReasoningStepRowProps) {
+  const hasSource = step.sourceDates.length > 0
   const isClickable = hasSource && onClick !== undefined
 
   return (
@@ -59,29 +54,27 @@ export function ReasoningStepRow({
           ? (e: React.KeyboardEvent<HTMLDivElement>) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                onClick!(step.sourceDates)
+                onClick(step.sourceDates)
               }
             }
           : undefined
       }
     >
       {/* Tag chip */}
-      <span className={`flex-shrink-0 w-10 font-semibold ${TAG_COLOR[step.tag]}`}>
-        {step.tag}
-      </span>
+      <span className={`flex-shrink-0 w-10 font-semibold ${TAG_COLOR[step.tag]}`}>{step.tag}</span>
 
       {/* Step text */}
       <span className="flex-1 text-fg leading-relaxed break-words min-w-0">
         {step.text}
         {isLive && (
-          <span className="text-accent ml-1 animate-pulse" aria-hidden="true">▋</span>
+          <span className="text-accent ml-1 animate-pulse" aria-hidden="true">
+            ▋
+          </span>
         )}
       </span>
 
       {/* Duration */}
-      <span className="flex-shrink-0 text-fg-faint whitespace-nowrap">
-        {step.durationMs}ms
-      </span>
+      <span className="flex-shrink-0 text-fg-faint whitespace-nowrap">{step.durationMs}ms</span>
     </motion.div>
   )
 }

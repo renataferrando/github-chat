@@ -9,7 +9,7 @@ import {
   computeMonthLabels,
   trailingAverage,
 } from '@/src/lib/utils'
-import { AVATAR_PALETTE } from '@/src/lib/tokens'
+import { AVATAR_PALETTE, AVATAR_OVERRIDES } from '@/src/lib/tokens'
 import { streamReasoning } from '@/src/lib/mockChat'
 import type { ContributionDay } from '@/src/types/contributions'
 import type { ReasoningStep } from '@/src/types/chat'
@@ -52,12 +52,12 @@ describe('seededRandom', () => {
 
 describe('getContributionLevel', () => {
   it.each([
-    [0,  0],
-    [1,  1],
-    [3,  1],
-    [4,  2],
-    [7,  2],
-    [8,  3],
+    [0, 0],
+    [1, 1],
+    [3, 1],
+    [4, 2],
+    [7, 2],
+    [8, 3],
     [14, 3],
     [15, 4],
     [23, 4],
@@ -93,7 +93,7 @@ describe('formatDate', () => {
 
 /** Build a minimal ContributionDay array spanning given ISO dates */
 function makeDays(dates: string[]): ContributionDay[] {
-  return dates.map(date => ({ date, count: 0, level: 0 as const }))
+  return dates.map((date) => ({ date, count: 0, level: 0 as const }))
 }
 
 /** Build one day per week (Sundays) for N weeks starting at startIso */
@@ -150,7 +150,7 @@ describe('computeMonthLabels', () => {
   it('labels are distinct month strings', () => {
     const days = makeWeeklySundays('2025-05-11', 53)
     const labels = computeMonthLabels(days)
-    const names = labels.map(l => l.label)
+    const names = labels.map((l) => l.label)
     // No two adjacent labels should be the same month name
     for (let i = 1; i < names.length; i++) {
       expect(names[i]).not.toBe(names[i - 1])
@@ -161,8 +161,9 @@ describe('computeMonthLabels', () => {
 // ─── avatarColor ──────────────────────────────────────────────────────────────
 
 describe('avatarColor', () => {
-  it('elenavoss hashes to forest green', () => {
-    expect(avatarColor('elenavoss')).toBe('#1a7f3c')
+  it('elenavoss resolves via AVATAR_OVERRIDES', () => {
+    // Override currently maps elenavoss to medium blue — update if AVATAR_OVERRIDES changes.
+    expect(avatarColor('elenavoss')).toBe(AVATAR_OVERRIDES['elenavoss'])
   })
 
   it('palette is exactly 8 colors', () => {
@@ -184,9 +185,9 @@ describe('avatarColor', () => {
 
 describe('formatCount', () => {
   it.each([
-    [999,   '999'],
-    [1000,  '1k'],
-    [2300,  '2.3k'],
+    [999, '999'],
+    [1000, '1k'],
+    [2300, '2.3k'],
     [48000, '48k'],
   ] as [number, string][])('%i → %s', (n, expected) => {
     expect(formatCount(n)).toBe(expected)
@@ -250,10 +251,9 @@ describe('streamReasoning', () => {
 // ─── trailingAverage ──────────────────────────────────────────────────────────
 
 describe('trailingAverage', () => {
-  const days = makeDays([
-    '2025-01-01', '2025-01-02', '2025-01-03',
-    '2025-01-04', '2025-01-05',
-  ]).map((d, i) => ({ ...d, count: i + 1 }))
+  const days = makeDays(['2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04', '2025-01-05']).map(
+    (d, i) => ({ ...d, count: i + 1 }),
+  )
   // counts: [1, 2, 3, 4, 5]
 
   it('returns 0 when beforeDate is not in the dataset', () => {
