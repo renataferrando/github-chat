@@ -17,17 +17,6 @@ streams a reasoning trace and a canned answer with highlighted heatmap cells.
 | Animation | **Framer Motion** | Entry/exit on reasoning steps only; CSS handles everything else |
 | Testing | **Vitest** | Pure-function unit tests for the reducer, utilities, and streaming generator |
 
----
-
-## What's mocked
-
-| Export | File | Notes |
-|--------|------|-------|
-| `MOCK_PROFILE` | `src/lib/mockProfile.ts` | Elena Voss — static object |
-| `MOCK_CONTRIBUTIONS` | `src/lib/mockContributions.ts` | 365 days, seeded PRNG, sprint peak on 2026-03-10 |
-| `CANNED_ASSISTANT` | `src/lib/mockChat.ts` | Fixed reasoning trace, answer, followups, figures |
-| `STATIC_MESSAGES` | `src/lib/mockChat.ts` | Seed conversation; assistant starts in `thinking` state |
-| `streamReasoning()` | `src/lib/mockChat.ts` | Async generator — yields steps with real `durationMs` delays |
 
 ---
 
@@ -71,15 +60,9 @@ per-username overrides).
   custom-built on Tailwind + native HTML. The product's GitHub-native visual
   identity is its main differentiator, and the interactive surfaces I needed
   (heatmap with roving tabindex, reasoning trace, scope bar) don't exist in
-  any library. I'd reach for Radix Primitives if I needed a Dialog, Combobox,
-  or Popover — none of those are here.
+  any library. 
 
-- **Streaming via an async generator (`streamReasoning`), not SSE.** The
-  shape matches a real SSE endpoint exactly — the `ChatProvider` effect uses
-  an `AbortController` and would accept a real stream with no changes to the
-  reducer or components.
-
-- **`useReducer` over Zustand / Redux / Jotai.** Chat state is local to one
+- **`useReducer` over Redux or other libs .** Chat state is local to one
   provider; a typed reducer with a discriminated `ChatAction` union gives
   exhaustiveness checking and is the right scale for this size of app. I'd
   reach for Zustand if state needed to be consumed outside the `ChatProvider`
@@ -92,6 +75,31 @@ per-username overrides).
 - **Mobile is a graceful fallback, not a redesign.** Below 1180px the
   two-pane layout stacks vertically. A true mobile experience would put the
   chat in a sheet behind a FAB — out of scope here.
+
+---
+
+## Beyond the brief
+
+Things in this submission that weren't in the spec:
+
+- **AI Insights panel** ([`src/components/profile/InsightsPanel.tsx`](src/components/profile/InsightsPanel.tsx)).
+  Three insights auto-derived from the contribution data — busiest day,
+  sprint week, top repo. Each insight, when clicked, both highlights the
+  relevant cells on the heatmap and fires a pre-written question into the
+  chat.
+
+- **Bidirectional chat ↔ heatmap coupling.** Clicking a reasoning step
+  with `sourceDates` highlights the corresponding cells on the heatmap;
+  clicking a heatmap cell adds it as a scope chip in the chat. State
+  flows both directions through the `ChatProvider`.
+
+- **Tooltip with computed delta.** The cell tooltip shows the day's
+  count vs. the trailing-90-day average, colored green/red, plus the
+  commits/PRs/reviews split and the top repo for that day.
+
+- **Staggered cell reveal.** Heatmap cells fade in column-by-column on
+  mount via a CSS keyframe with an inline `--col` custom property.
+  Respects `prefers-reduced-motion`.
 
 ---
 
@@ -115,10 +123,12 @@ Styling is split across two files with distinct jobs. `app/globals.css` owns eve
 
 ## Known not-implemented
 
-- Real LLM / backend integration
 - Message persistence or multi-conversation history
+- Intent-specific answers for every possible prompt. The chat accepts different
+  questions and follow-up chips, but the mock assistant intentionally reuses a
+  single canned reasoning flow/answer to keep the challenge focused on the
+  frontend experience rather than response-routing logic.
 - Year scrubber / analysis-window brush below heatmap
-- Top nav tabs (Overview / Repositories / …)
 - AI Insights panel driven by real inference
 - Component-level tests (Playwright for the chat flow; Vitest + Testing
   Library for heatmap interactions). Pure functions (reducer, utils,
